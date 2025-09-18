@@ -34,10 +34,17 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.methods.generateAuthenticationToken = async () => {
+
+// The Problem:
+// Arrow Function Context Issue: The generateAuthenticationToken method was using an arrow function (async () => {}), which doesn't bind this properly
+// Missing User ID: When the JWT was created, this._id was undefined because arrow functions don't have their own this context
+// Invalid Token Payload: This resulted in JWT tokens being generated without the user ID, only containing iat and exp (issued at and expiration time)
+// Authentication Failure: When the auth middleware tried to find the user using decoded.id, it was undefined, causing "User not found" error
+
+userSchema.methods.generateAuthenticationToken = async function () {
   try {
     const token = jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "24h",
     });
     return token;
   } catch (error) {
