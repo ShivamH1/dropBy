@@ -1,4 +1,3 @@
-
 const userModel = require("../models/userModel");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
@@ -10,6 +9,11 @@ const userRegister = async (req, res, next) => {
   }
 
   const { fullName, email, password } = req.body;
+  const isUserExists = await userModel.findOne({ email });
+  if (isUserExists) {
+    return res.status(400).json({ error: "User already exists" });
+  }
+
   const hashedPassword = await userModel.hashPassword(password);
 
   try {

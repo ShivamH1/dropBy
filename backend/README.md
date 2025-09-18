@@ -286,6 +286,127 @@ Invalid or missing authentication token.
 4. **Profile Access**: Use token to access user profile information
 5. **Logout**: Invalidate token and clear session data
 
+## Captain Endpoints
+
+### Register Captain
+
+Register a new captain (driver) in the system.
+
+**URL**: `/api/captains/register`
+
+**Method**: `POST`
+
+**Authentication**: Not required
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| fullName.firstName | String | Captain's first name | Required, min length: 3 |
+| fullName.lastName | String | Captain's last name | Required, min length: 3 |
+| email | String | Captain's email address | Required, valid email format |
+| password | String | Captain's password | Required, min length: 6 |
+| vehicle.color | String | Vehicle color | Required |
+| vehicle.plateNumber | String | Vehicle plate number | Required |
+| vehicle.capacity | Number | Vehicle passenger capacity | Required, minimum: 1 |
+| vehicle.vehicleType | String | Type of vehicle | Required, enum: ["car", "motorcycle", "auto rickshaw"] |
+
+**Example Request**:
+```json
+{
+  "fullName": {
+    "firstName": "Ramesh",
+    "lastName": "Loadha"
+  },
+  "email": "rameshlodha@gmail.com",
+  "password": "231231",
+  "vehicle": {
+    "color": "blue",
+    "plateNumber": "MH32 QLW 3321",
+    "capacity": 3,
+    "vehicleType": "car"
+  }
+}
+```
+
+#### Responses
+
+**Status Code: 201 Created**
+
+Captain successfully registered.
+
+```json
+{
+  "captain": {
+    "fullName": {
+      "firstName": "Ramesh",
+      "lastName": "Loadha"
+    },
+    "email": "rameshlodha@gmail.com",
+    "_id": "captain_id",
+    "vehicle": {
+      "color": "blue",
+      "plateNumber": "MH32 QLW 3321",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive",
+    "socketId": null,
+    "__v": 0
+  },
+  "token": "jwt_authentication_token",
+  "message": "Registration successful"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid request body, validation error, or captain already exists.
+
+```json
+{
+  "errors": [
+    {
+      "msg": "First name is required",
+      "param": "fullName.firstName",
+      "location": "body"
+    }
+  ]
+}
+```
+
+OR
+
+```json
+{
+  "error": "Captain already exists"
+}
+```
+
+OR
+
+```json
+{
+  "error": "All required fields must be provided"
+}
+```
+
+#### Implementation Details
+
+1. The endpoint validates the request body using express-validator
+2. Checks if captain with the same email already exists
+3. Password is hashed using bcrypt before storage
+4. JWT authentication token is generated upon successful registration
+5. Captain status defaults to "inactive" until activated
+6. Vehicle information is stored as nested object
+
+#### Security Considerations
+
+- Passwords are hashed using bcrypt with salt rounds
+- Email uniqueness is enforced at database level
+- Password field is never returned in API responses
+- JWT tokens expire after 24 hours
+
 ## Error Handling
 
 All endpoints follow consistent error response format:
