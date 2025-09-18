@@ -1,4 +1,5 @@
 const userModel = require("../models/userModel");
+const blackListTokenModel = require("../models/blackListToken.model");
 
 const createUser = async ({ firstName, lastName, email, password }) => {
   if (!firstName || !email || !password) {
@@ -50,7 +51,21 @@ const loginUser = async ({ email, password }) => {
   }
 };
 
+const logoutUser = async ({ token }) => {
+  if (!token) {
+    throw new Error("Token is required");
+  }
+
+  try {
+    await blackListTokenModel.create({ token });
+  } catch (error) {
+    console.error("Logout error: ", error);
+    throw new Error(error.message);
+  }
+};
+
 module.exports = {
   createUser,
-  loginUser
+  loginUser,
+  logoutUser,
 };
