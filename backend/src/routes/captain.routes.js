@@ -26,4 +26,14 @@ router.post("/register", [
   body("vehicle.vehicleType").isIn(["car", "motorcycle", "auto rickshaw"]).withMessage("Invalid vehicle type")
 ], captainController.captainRegister);
 
+router.post("/login", [
+  body("email").notEmpty().withMessage("Email is required"),
+  body("email").isEmail().withMessage("Email is not valid"),
+  body("password").notEmpty().withMessage("Password is required"),
+], captainController.captainLogin);
+
+router.get("/profile", authUser.authCaptain, captainController.captainProfile);
+
+router.post("/logout", authUser.authCaptain, captainController.captainLogout);
+
 module.exports = router;

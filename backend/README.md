@@ -280,11 +280,26 @@ Invalid or missing authentication token.
 
 ## Authentication Flow
 
+### User Authentication Flow
 1. **Registration**: User creates account → receives user object (no token)
 2. **Login**: User authenticates → receives JWT token and user object
 3. **Protected Routes**: Include `Authorization: Bearer <token>` header
 4. **Profile Access**: Use token to access user profile information
 5. **Logout**: Invalidate token and clear session data
+
+### Captain Authentication Flow
+1. **Registration**: Captain creates account → receives captain object with JWT token
+2. **Login**: Captain authenticates → receives JWT token and captain object
+3. **Protected Routes**: Include `Authorization: Bearer <token>` header
+4. **Profile Access**: Use token to access captain profile information
+5. **Logout**: Invalidate token and clear session data
+
+### Key Differences
+- **User registration**: No token provided (requires separate login)
+- **Captain registration**: JWT token provided immediately
+- **Middleware**: Users use `authUser`, Captains use `authCaptain`
+- **Token payload**: Same structure (`{ id: user/captain_id, iat, exp }`)
+- **Blacklisting**: Both user and captain tokens use same blacklist system
 
 ## Captain Endpoints
 
@@ -406,6 +421,213 @@ OR
 - Email uniqueness is enforced at database level
 - Password field is never returned in API responses
 - JWT tokens expire after 24 hours
+
+### Login Captain
+
+Authenticate a captain and get a token.
+
+**URL**: `/api/captains/login`
+
+**Method**: `POST`
+
+**Authentication**: Not required
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| email | String | Captain's email address | Required, valid email format |
+| password | String | Captain's password | Required |
+
+**Example Request**:
+```json
+{
+  "email": "rameshlodha@gmail.com",
+  "password": "231231"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Captain successfully authenticated.
+
+```json
+{
+  "token": "jwt_authentication_token",
+  "captain": {
+    "fullName": {
+      "firstName": "Ramesh",
+      "lastName": "Loadha"
+    },
+    "email": "rameshlodha@gmail.com",
+    "_id": "captain_id",
+    "vehicle": {
+      "color": "blue",
+      "plateNumber": "MH32 QLW 3321",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive",
+    "socketId": null,
+    "__v": 0
+  },
+  "message": "Login successful"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid credentials or authentication failed.
+
+```json
+{
+  "error": "Invalid email!"
+}
+```
+
+OR
+
+```json
+{
+  "error": "Invalid password!"
+}
+```
+
+#### Implementation Details
+
+1. The endpoint validates the request body using express-validator
+2. Password is compared with the stored hash using bcrypt
+3. JWT authentication token is generated upon successful login
+4. Password field is excluded from the response
+
+### Get Captain Profile
+
+Get the authenticated captain's profile information.
+
+**URL**: `/api/captains/profile`
+
+**Method**: `GET`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+**Example Request**:
+```bash
+GET /api/captains/profile
+Authorization: Bearer jwt_authentication_token
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Captain profile retrieved successfully.
+
+```json
+{
+  "captain": {
+    "fullName": {
+      "firstName": "Ramesh",
+      "lastName": "Loadha"
+    },
+    "email": "rameshlodha@gmail.com",
+    "_id": "captain_id",
+    "vehicle": {
+      "color": "blue",
+      "plateNumber": "MH32 QLW 3321",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive",
+    "socketId": null,
+    "__v": 0
+  },
+  "message": "Profile fetched successfully"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+OR
+
+```json
+{
+  "error": "Captain not found"
+}
+```
+
+#### Implementation Details
+
+1. Requires valid JWT token in Authorization header or cookies
+2. Token is verified against JWT_SECRET
+3. Captain is fetched from database using token payload
+4. Uses dedicated `authCaptain` middleware for captain authentication
+
+### Logout Captain
+
+Logout the authenticated captain and invalidate their token.
+
+**URL**: `/api/captains/logout`
+
+**Method**: `POST`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+**Example Request**:
+```bash
+POST /api/captains/logout
+Authorization: Bearer jwt_authentication_token
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Captain successfully logged out.
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+#### Implementation Details
+
+1. Clears authentication cookie from browser
+2. Adds token to blacklist to prevent reuse
+3. Uses captain service for logout logic
+4. Middleware checks blacklist on subsequent requests
 
 ## Error Handling
 
