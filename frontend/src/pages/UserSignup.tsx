@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Car, Mail, Lock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { setToken } from "@/utils/cookieUtils";
+import { userSignup } from "@/service/API/userAPIs";
 
 const UserSignup = () => {
   const { toast } = useToast();
@@ -16,9 +24,11 @@ const UserSignup = () => {
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.firstName.length < 3 || formData.firstName.length > 20) {
       toast({
         title: "Invalid First Name",
@@ -28,7 +38,10 @@ const UserSignup = () => {
       return;
     }
 
-    if (formData.lastName && (formData.lastName.length < 3 || formData.lastName.length > 20)) {
+    if (
+      formData.lastName &&
+      (formData.lastName.length < 3 || formData.lastName.length > 20)
+    ) {
       toast({
         title: "Invalid Last Name",
         description: "Last name must be 3-20 characters",
@@ -55,16 +68,58 @@ const UserSignup = () => {
       return;
     }
 
-    toast({
-      title: "Account Created!",
-      description: "Welcome to DropBy",
-    });
+    const newUser = {
+      fullName: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      },
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const response = await userSignup(newUser);
+
+      if (response.status === 201) {
+        toast({
+          title: "Account Created!",
+          description: "Welcome to DropBy",
+        });
+
+        // Set token in cookie using utility
+        if (response.data.token) {
+          setToken(response.data.token);
+        }
+
+        navigate("/home");
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        });
+        navigate("/user/login");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.error || "Signup failed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -99,7 +154,7 @@ const UserSignup = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
@@ -128,7 +183,7 @@ const UserSignup = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
               <div className="relative">
@@ -152,20 +207,31 @@ const UserSignup = () => {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
-            <Link to="/user/login" className="text-primary hover:underline font-medium">
+            <span className="text-muted-foreground">
+              Already have an account?{" "}
+            </span>
+            <Link
+              to="/user/login"
+              className="text-primary hover:underline font-medium"
+            >
               Sign in here
             </Link>
           </div>
 
           <div className="mt-4 text-center">
-            <Link to="/captain/signup" className="text-captain hover:underline font-medium text-sm">
+            <Link
+              to="/captain/signup"
+              className="text-captain hover:underline font-medium text-sm"
+            >
               Want to drive with us? Join as Captain
             </Link>
           </div>
 
           <div className="mt-6 text-center">
-            <Link to="/" className="text-muted-foreground hover:text-foreground text-sm">
+            <Link
+              to="/"
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
               ← Back to Home
             </Link>
           </div>

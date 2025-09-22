@@ -1,20 +1,23 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Truck, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { setToken } from "@/utils/cookieUtils";
+import { captainLogin } from "@/service/API/captainAPIs";
 
 const CaptainLogin = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.email.length < 3) {
@@ -35,10 +38,45 @@ const CaptainLogin = () => {
       return;
     }
 
-    toast({
-      title: "Welcome back Captain!",
-      description: "Login successful",
-    });
+    const captainData = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const response = await captainLogin(captainData);
+      if (response.status === 200) {
+        toast({
+          title: "Welcome back Captain!",
+          description: "Login successful",
+        });
+
+        // Set token in cookie using utility
+        if (response.data.token) {
+          setToken(response.data.token);
+        }
+
+        navigate("/captain-home");
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        });
+        navigate("/captain/login");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.error || "Login failed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setFormData({
+        email: "",
+        password: "",
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

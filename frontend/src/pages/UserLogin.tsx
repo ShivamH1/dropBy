@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Car, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { setToken } from "@/utils/cookieUtils";
+import { userLogin } from "@/service/API/userAPIs";
 
 const UserLogin = () => {
   const { toast } = useToast();
@@ -14,9 +22,11 @@ const UserLogin = () => {
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.email.length < 3) {
       toast({
         title: "Invalid Email",
@@ -28,23 +38,57 @@ const UserLogin = () => {
 
     if (formData.password.length < 3) {
       toast({
-        title: "Invalid Password", 
+        title: "Invalid Password",
         description: "Password must be at least 3 characters",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Welcome back!",
-      description: "Login successful",
-    });
+    const userData = {
+      email: formData.email,
+      password: formData.password,
+    };
+    try {
+      const response = await userLogin(userData);
+      if (response.status === 200) {
+        toast({
+          title: "Welcome back!",
+          description: "Login successful",
+        });
+
+        // Set token in cookie using utility
+        if (response.data.token) {
+          setToken(response.data.token);
+        }
+
+        navigate("/home");
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        });
+        navigate("/user/login");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.error || "Login failed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setFormData({
+        email: "",
+        password: "",
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -79,7 +123,7 @@ const UserLogin = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -103,20 +147,31 @@ const UserLogin = () => {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/user/signup" className="text-primary hover:underline font-medium">
+            <span className="text-muted-foreground">
+              Don't have an account?{" "}
+            </span>
+            <Link
+              to="/user/signup"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up here
             </Link>
           </div>
 
           <div className="mt-4 text-center">
-            <Link to="/captain/login" className="text-captain hover:underline font-medium text-sm">
+            <Link
+              to="/captain/login"
+              className="text-captain hover:underline font-medium text-sm"
+            >
               Are you a captain? Login here
             </Link>
           </div>
 
           <div className="mt-6 text-center">
-            <Link to="/" className="text-muted-foreground hover:text-foreground text-sm">
+            <Link
+              to="/"
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
               ← Back to Home
             </Link>
           </div>

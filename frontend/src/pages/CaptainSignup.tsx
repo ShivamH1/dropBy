@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck, Mail, Lock, User, Car, Hash, Palette, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { setToken } from "@/utils/cookieUtils";
+import { captainRegister } from "@/service/API/captainAPIs";
 
 const CaptainSignup = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -21,7 +24,7 @@ const CaptainSignup = () => {
     vehicleType: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.firstName.length < 3) {
@@ -78,10 +81,62 @@ const CaptainSignup = () => {
       return;
     }
 
-    toast({
-      title: "Captain Account Created!",
-      description: "Welcome to the DropBy Captain community",
-    });
+    const newCaptain = {
+      fullName: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      },
+      email: formData.email,
+      password: formData.password,
+      vehicle: {
+        color: formData.vehicleColor,
+        plateNumber: formData.plateNumber,
+        capacity: parseInt(formData.capacity),
+        vehicleType: formData.vehicleType,
+      },
+    };
+
+    try {
+      const response = await captainRegister(newCaptain);
+
+      if (response.status === 201) {
+        toast({
+          title: "Captain Account Created!",
+          description: "Welcome to the DropBy Captain community",
+        });
+
+        // Set token in cookie using utility
+        if (response.data.token) {
+          setToken(response.data.token);
+        }
+
+        navigate("/captain-home");
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        });
+        navigate("/captain/login");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.error || "Signup failed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        vehicleColor: "",
+        plateNumber: "",
+        capacity: "",
+        vehicleType: "",
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
