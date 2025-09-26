@@ -12,9 +12,9 @@ import CaptainHome from "./pages/CaptainHome";
 import NotFound from "./pages/NotFound";
 import UserContext from "./service/context/UserContext";
 import CaptainContext from "./service/context/CaptainContext";
-import Home from "./pages/Home";
 import UserProtectedWrapper from "./pages/UserProtectedWrapper";
 import CaptainProtectedWrapper from "./pages/CaptainProtectedWrapper";
+import Home from "./pages/Home";
 
 const queryClient = new QueryClient();
 
