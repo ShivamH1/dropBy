@@ -8,6 +8,8 @@ import ConfirmRide from "../components/ConfirmRide";
 import { userLogout } from "@/service/API/userAPIs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import LookingForDriver from "@/components/LookingForDriver";
+import WaitingForDriver from "@/components/WaitingForDriver";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -17,12 +19,17 @@ const Home = () => {
   const confirmRidePanelRef = useRef(null);
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
+  const vehicleFoundRef = useRef(null);
+  const waitingForDriverRef = useRef(null);
+
   const [vehiclePanel, setVehiclePanel] = useState(false);
   const [confirmRidePanel, setConfirmRidePanel] = useState(false);
+  const [vehicleFound, setVehicleFound] = useState(false);
+  const [waitingForDriver, setWaitingForDriver] = useState(false);
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const submitHandler = (e) => {
     e.preventDefault();
   };
@@ -97,6 +104,36 @@ const Home = () => {
       }
     },
     [confirmRidePanel]
+  );
+
+  useGSAP(
+    function () {
+      if (vehicleFound) {
+        gsap.to(vehicleFoundRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(vehicleFoundRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [vehicleFound]
+  );
+
+  useGSAP(
+    function () {
+      if (waitingForDriver) {
+        gsap.to(waitingForDriverRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(waitingForDriverRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [waitingForDriver]
   );
 
   return (
@@ -178,7 +215,22 @@ const Home = () => {
         ref={confirmRidePanelRef}
         className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"
       >
-        <ConfirmRide />
+        <ConfirmRide
+          setConfirmRidePanel={setConfirmRidePanel}
+          setVehicleFound={setVehicleFound}
+        />
+      </div>
+      <div
+        ref={vehicleFoundRef}
+        className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"
+      >
+        <LookingForDriver setVehicleFound={setVehicleFound} />
+      </div>
+      <div
+        ref={waitingForDriverRef}
+        className="fixed w-full z-10 bottom-0  bg-white px-3 py-6 pt-12"
+      >
+        <WaitingForDriver waitingForDriver={waitingForDriver} />
       </div>
     </div>
   );
