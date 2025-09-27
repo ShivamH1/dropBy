@@ -23,12 +23,18 @@ const CaptainProtectedWrapper = ({
 
     captainProfile()
       .then((response) => {
-        if (response.status === 200) {
+        console.log("API Response:", response); // Debug log to see the actual response
+        if (response.status === 200 || response.status === 304) {
+          console.log(response.data.captain);
           setCaptain(response.data.captain);
           setIsLoading(false);
+        } else {
+          console.log("Unexpected status code:", response.status);
+          setIsLoading(false); // Set loading to false even if status doesn't match
         }
       })
       .catch((err) => {
+        console.error("API Error:", err); // Debug log for errors
         removeToken();
         navigate("/captain/login");
       });
