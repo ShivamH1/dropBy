@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "DropBy - Captain APIs",
+    "description": "Collection for testing Captain-related APIs in the DropBy application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "captainToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the server is running"
+      },
+      "response": []
+    },
+    {
+      "name": "Captain Register",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.token) {",
+              "        pm.collectionVariables.set('captainToken', response.token);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\"\n  },\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Blue\",\n    \"plateNumber\": \"ABC123\",\n    \"capacity\": 4,\n    \"vehicleType\": \"car\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "register"]
+        },
+        "description": "Register a new captain account with vehicle details"
+      },
+      "response": []
+    },
+    {
+      "name": "Captain Register - Motorcycle",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.token) {",
+              "        pm.collectionVariables.set('captainToken', response.token);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Mike\",\n    \"lastName\": \"Johnson\"\n  },\n  \"email\": \"mike.johnson@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Red\",\n    \"plateNumber\": \"XYZ789\",\n    \"capacity\": 1,\n    \"vehicleType\": \"motorcycle\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "register"]
+        },
+        "description": "Register a new captain with motorcycle"
+      },
+      "response": []
+    },
+    {
+      "name": "Captain Register - Auto Rickshaw",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.token) {",
+              "        pm.collectionVariables.set('captainToken', response.token);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Raj\",\n    \"lastName\": \"Patel\"\n  },\n  \"email\": \"raj.patel@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Yellow\",\n    \"plateNumber\": \"DEF456\",\n    \"capacity\": 3,\n    \"vehicleType\": \"auto rickshaw\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "register"]
+        },
+        "description": "Register a new captain with auto rickshaw"
+      },
+      "response": []
+    },
+    {
+      "name": "Captain Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.token) {",
+              "        pm.collectionVariables.set('captainToken', response.token);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "login"]
+        },
+        "description": "Login with existing captain credentials"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Captain Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{captainToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "profile"]
+        },
+        "description": "Get the authenticated captain's profile information"
+      },
+      "response": []
+    },
+    {
+      "name": "Captain Logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    pm.collectionVariables.set('captainToken', '');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{captainToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/captains/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "captains", "logout"]
+        },
+        "description": "Logout the authenticated captain"
+      },
+      "response": []
+    }
+  ]
+}

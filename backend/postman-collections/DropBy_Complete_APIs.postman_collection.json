@@ -1,0 +1,470 @@
+{
+  "info": {
+    "name": "DropBy - Complete API Collection",
+    "description": "Complete collection for testing all APIs in the DropBy application (Users, Captains, and Maps)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "captainToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the server is running"
+      },
+      "response": []
+    },
+    {
+      "name": "User APIs",
+      "item": [
+        {
+          "name": "User Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('userToken', response.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n  },\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('userToken', response.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "login"]
+            },
+            "description": "Login with existing user credentials"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Get the authenticated user's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "User Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('userToken', '');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "logout"]
+            },
+            "description": "Logout the authenticated user"
+          },
+          "response": []
+        }
+      ],
+      "description": "All User-related API endpoints"
+    },
+    {
+      "name": "Captain APIs",
+      "item": [
+        {
+          "name": "Captain Register - Car",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('captainToken', response.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\"\n  },\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Blue\",\n    \"plateNumber\": \"ABC123\",\n    \"capacity\": 4,\n    \"vehicleType\": \"car\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "register"]
+            },
+            "description": "Register a new captain with car"
+          },
+          "response": []
+        },
+        {
+          "name": "Captain Register - Motorcycle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Mike\",\n    \"lastName\": \"Johnson\"\n  },\n  \"email\": \"mike.johnson@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Red\",\n    \"plateNumber\": \"XYZ789\",\n    \"capacity\": 1,\n    \"vehicleType\": \"motorcycle\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "register"]
+            },
+            "description": "Register a new captain with motorcycle"
+          },
+          "response": []
+        },
+        {
+          "name": "Captain Register - Auto Rickshaw",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": {\n    \"firstName\": \"Raj\",\n    \"lastName\": \"Patel\"\n  },\n  \"email\": \"raj.patel@example.com\",\n  \"password\": \"password123\",\n  \"vehicle\": {\n    \"color\": \"Yellow\",\n    \"plateNumber\": \"DEF456\",\n    \"capacity\": 3,\n    \"vehicleType\": \"auto rickshaw\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "register"]
+            },
+            "description": "Register a new captain with auto rickshaw"
+          },
+          "response": []
+        },
+        {
+          "name": "Captain Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('captainToken', response.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "login"]
+            },
+            "description": "Login with existing captain credentials"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Captain Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{captainToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "profile"]
+            },
+            "description": "Get the authenticated captain's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Captain Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('captainToken', '');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{captainToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/captains/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captains", "logout"]
+            },
+            "description": "Logout the authenticated captain"
+          },
+          "response": []
+        }
+      ],
+      "description": "All Captain-related API endpoints"
+    },
+    {
+      "name": "Maps APIs",
+      "item": [
+        {
+          "name": "Geocode Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"1600 Amphitheatre Parkway, Mountain View, CA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/maps/geocode",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maps", "geocode"]
+            },
+            "description": "Convert an address to coordinates (latitude and longitude)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reverse Geocode Coordinates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 37.4224764,\n  \"longitude\": -122.0842499\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/maps/reverse-geocode",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maps", "reverse-geocode"]
+            },
+            "description": "Convert coordinates to an address"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Distance and Time",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Times Square, New York, NY, USA\",\n  \"destination\": \"Central Park, New York, NY, USA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/maps/distance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maps", "distance"]
+            },
+            "description": "Get real driving distance and time between two addresses using OSRM routing"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Address Suggestions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"New Y\",\n  \"limit\": 5,\n  \"country\": \"US\",\n  \"language\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/maps/suggestions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maps", "suggestions"]
+            },
+            "description": "Get address suggestions/autocomplete based on partial input using MapTiler API"
+          },
+          "response": []
+        }
+      ],
+      "description": "All Maps-related API endpoints (requires user authentication)"
+    }
+  ]
+}

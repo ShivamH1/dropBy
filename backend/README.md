@@ -629,6 +629,472 @@ Invalid or missing authentication token.
 3. Uses captain service for logout logic
 4. Middleware checks blacklist on subsequent requests
 
+## Maps Endpoints
+
+### Geocode Address
+
+Convert an address to coordinates (latitude and longitude).
+
+**URL**: `/api/maps/geocode`
+
+**Method**: `POST`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| address | String | Address to convert to coordinates | Required |
+
+**Example Request**:
+```json
+{
+  "address": "Times Square, New York, NY"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Address successfully geocoded.
+
+```json
+{
+  "success": true,
+  "data": {
+    "latitude": 40.7580,
+    "longitude": -73.9855,
+    "formattedAddress": "Times Square, New York, NY, USA",
+    "confidence": 0.9,
+    "addressComponents": {
+      "country": "United States",
+      "region": "New York",
+      "place": "New York",
+      "postcode": "10036"
+    }
+  },
+  "message": "Address geocoded successfully"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid request body or address not found.
+
+```json
+{
+  "success": false,
+  "message": "Address is required"
+}
+```
+
+OR
+
+```json
+{
+  "success": false,
+  "error": "No coordinates found for the provided address"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Status Code: 500 Internal Server Error**
+
+API error or service unavailable.
+
+```json
+{
+  "success": false,
+  "error": "Invalid MapTiler API key"
+}
+```
+
+#### Implementation Details
+
+1. Uses MapTiler Geocoding API for address conversion
+2. Returns latitude and longitude coordinates
+3. Includes formatted address and confidence score
+4. Provides detailed address components (country, region, etc.)
+5. Handles various error scenarios (invalid API key, rate limits, etc.)
+
+### Reverse Geocode Coordinates
+
+Convert coordinates (latitude and longitude) to an address.
+
+**URL**: `/api/maps/reverse-geocode`
+
+**Method**: `POST`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| latitude | Number | Latitude coordinate | Required, between -90 and 90 |
+| longitude | Number | Longitude coordinate | Required, between -180 and 180 |
+
+**Example Request**:
+```json
+{
+  "latitude": 40.7580,
+  "longitude": -73.9855
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Coordinates successfully reverse geocoded.
+
+```json
+{
+  "success": true,
+  "data": {
+    "formattedAddress": "Times Square, New York, NY, USA",
+    "addressComponents": {
+      "country": "United States",
+      "region": "New York",
+      "place": "New York",
+      "postcode": "10036"
+    }
+  },
+  "message": "Coordinates reverse geocoded successfully"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid coordinates or validation error.
+
+```json
+{
+  "success": false,
+  "message": "Valid latitude and longitude numbers are required"
+}
+```
+
+OR
+
+```json
+{
+  "success": false,
+  "message": "Invalid coordinates. Latitude must be between -90 and 90, longitude between -180 and 180"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+#### Implementation Details
+
+1. Validates coordinate ranges before processing
+2. Uses MapTiler reverse geocoding API
+3. Returns formatted address with components
+4. Handles edge cases for coordinates in remote areas
+
+### Calculate Distance and Time
+
+Calculate distance and estimated travel time between two addresses.
+
+**URL**: `/api/maps/distance`
+
+**Method**: `POST`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| origin | String | Starting address | Required |
+| destination | String | Destination address | Required |
+
+**Example Request**:
+```json
+{
+  "origin": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Distance calculated successfully.
+
+```json
+{
+  "success": true,
+  "data": {
+    "origin": {
+      "address": "Times Square, New York, NY",
+      "coordinates": {
+        "latitude": 40.7580,
+        "longitude": -73.9855
+      },
+      "formattedAddress": "Times Square, New York, NY, USA"
+    },
+    "destination": {
+      "address": "Central Park, New York, NY",
+      "coordinates": {
+        "latitude": 40.7829,
+        "longitude": -73.9654
+      },
+      "formattedAddress": "Central Park, New York, NY, USA"
+    },
+    "route": {
+      "distance": {
+        "meters": 2847,
+        "kilometers": 2.85,
+        "miles": 1.77
+      },
+      "duration": {
+        "seconds": 342,
+        "minutes": 6,
+        "hours": 0.1,
+        "formatted": "6m"
+      }
+    }
+  },
+  "message": "Distance and time calculated successfully using real routing data"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid addresses or geocoding failure.
+
+```json
+{
+  "success": false,
+  "message": "Both origin and destination addresses are required"
+}
+```
+
+OR
+
+```json
+{
+  "success": false,
+  "message": "Could not geocode one or both addresses"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+#### Implementation Details
+
+1. **Address Geocoding**: Uses MapTiler API to convert addresses to coordinates
+2. **Real Routing**: Integrates with OSRM (Open Source Routing Machine) for actual road routing
+3. **Accurate Calculations**: Provides real driving distance and time, not estimates
+4. **Multiple Units**: Returns distance in meters, kilometers, and miles
+5. **Comprehensive Time Data**: Provides duration in seconds, minutes, hours, and formatted string
+6. **Error Handling**: Robust error handling for geocoding failures and routing issues
+7. **Global Coverage**: Works worldwide using OpenStreetMap data
+
+#### Notes
+
+- **Real Routing Data**: Uses OSRM (Open Source Routing Machine) for accurate road-based routing
+- **Actual Driving Distance**: Calculates real driving distance, not straight-line distance
+- **Precise Travel Times**: Provides accurate travel time estimates based on actual road conditions
+- **Multiple Formats**: Returns distance in meters, kilometers, and miles
+- **Time Formats**: Returns duration in seconds, minutes, hours, and human-readable format
+- **Free Service**: OSRM is completely free with no API key required
+- **Global Coverage**: Works worldwide with OpenStreetMap data
+
+### Get Address Suggestions (Autocomplete)
+
+Get address suggestions/autocomplete based on partial input, similar to Google Maps autocomplete.
+
+**URL**: `/api/maps/suggestions`
+
+**Method**: `POST`
+
+**Authentication**: Required (Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for authentication | Yes |
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| query | String | Partial address or place name | Required, min length: 2 |
+| limit | Number | Maximum number of suggestions | Optional, 1-10, default: 5 |
+| country | String | Country code to filter results | Optional, e.g., "US", "CA" |
+| proximity | String | Longitude,latitude for proximity bias | Optional, e.g., "-74.0060,40.7128" |
+| bbox | String | Bounding box to limit results | Optional, "minX,minY,maxX,maxY" |
+| language | String | Language code for results | Optional, 2-char code, e.g., "en" |
+
+**Example Request**:
+```json
+{
+  "query": "New Y",
+  "limit": 5,
+  "country": "US",
+  "language": "en"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+
+Address suggestions retrieved successfully.
+
+```json
+{
+  "success": true,
+  "data": {
+    "query": "New Y",
+    "suggestions": [
+      {
+        "id": "suggestion_0",
+        "text": "New York, NY, USA",
+        "placeName": "New York, New York, United States",
+        "coordinates": {
+          "latitude": 40.7128,
+          "longitude": -74.0060
+        },
+        "relevance": 0.99,
+        "placeType": ["place"],
+        "context": [
+          {
+            "id": "country.19678805456372290",
+            "text": "United States",
+            "shortCode": "us"
+          },
+          {
+            "id": "region.17349986251855570",
+            "text": "New York",
+            "shortCode": "US-NY"
+          }
+        ],
+        "properties": {
+          "category": null,
+          "landmark": false,
+          "address": null
+        }
+      }
+    ],
+    "count": 1
+  },
+  "message": "Address suggestions retrieved successfully"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid request body or validation error.
+
+```json
+{
+  "success": false,
+  "message": "Query is required for address suggestions"
+}
+```
+
+OR
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Query must be at least 2 characters",
+      "param": "query",
+      "location": "body"
+    }
+  ]
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Status Code: 500 Internal Server Error**
+
+API error or service unavailable.
+
+```json
+{
+  "success": false,
+  "error": "Invalid MapTiler API key"
+}
+```
+
+#### Implementation Details
+
+1. **MapTiler Autocomplete**: Uses MapTiler's geocoding API with `autocomplete=true` parameter
+2. **Smart Filtering**: Supports country, proximity, and bounding box filtering
+3. **Relevance Scoring**: Results are ordered by relevance score
+4. **Rich Context**: Includes place type, context hierarchy, and properties
+5. **Minimum Query Length**: Requires at least 2 characters to prevent excessive API calls
+6. **Rate Limiting**: Respects MapTiler API rate limits
+
+#### Usage Tips
+
+- **Debounce Input**: Implement debouncing on frontend to avoid excessive API calls
+- **Country Filtering**: Use country codes to limit results to specific regions
+- **Proximity Bias**: Use user's location for proximity-based suggestions
+- **Caching**: Consider caching common queries to improve performance
+
 ## Error Handling
 
 All endpoints follow consistent error response format:
@@ -636,3 +1102,4 @@ All endpoints follow consistent error response format:
 - **Validation Errors**: Return array of specific field errors
 - **Authentication Errors**: Return generic unauthorized messages
 - **Server Errors**: Return generic error messages without sensitive details
+- **Maps API Errors**: Include specific error messages for geocoding failures
