@@ -176,7 +176,9 @@ class MapsService {
 
       // First, geocode both addresses to get coordinates
       const originResult = await this.getCoordinatesFromAddress(originAddress);
-      const destinationResult = await this.getCoordinatesFromAddress(destinationAddress);
+      const destinationResult = await this.getCoordinatesFromAddress(
+        destinationAddress
+      );
 
       if (!originResult.success || !destinationResult.success) {
         throw new Error("Could not geocode one or both addresses");
@@ -187,24 +189,24 @@ class MapsService {
 
       // Use OSRM (Open Source Routing Machine) for routing
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${originCoords.longitude},${originCoords.latitude};${destCoords.longitude},${destCoords.latitude}`;
-      
+
       const response = await axios.get(osrmUrl, {
         params: {
           overview: "false",
           steps: "false",
-          geometries: "geojson"
+          geometries: "geojson",
         },
-        timeout: 15000 // 15 second timeout
+        timeout: 15000, // 15 second timeout
       });
 
       const data = response.data;
-      
+
       if (!data.routes || data.routes.length === 0) {
         throw new Error("No route found between the specified locations");
       }
 
       const route = data.routes[0];
-      
+
       return {
         success: true,
         data: {
@@ -212,50 +214,60 @@ class MapsService {
             address: originAddress,
             coordinates: {
               latitude: originCoords.latitude,
-              longitude: originCoords.longitude
+              longitude: originCoords.longitude,
             },
-            formattedAddress: originCoords.formattedAddress
+            formattedAddress: originCoords.formattedAddress,
           },
           destination: {
             address: destinationAddress,
             coordinates: {
               latitude: destCoords.latitude,
-              longitude: destCoords.longitude
+              longitude: destCoords.longitude,
             },
-            formattedAddress: destCoords.formattedAddress
+            formattedAddress: destCoords.formattedAddress,
           },
           route: {
             distance: {
               meters: Math.round(route.distance),
-              kilometers: Math.round(route.distance / 1000 * 100) / 100,
-              miles: Math.round(route.distance / 1609.34 * 100) / 100
+              kilometers: Math.round((route.distance / 1000) * 100) / 100,
+              miles: Math.round((route.distance / 1609.34) * 100) / 100,
             },
             duration: {
               seconds: Math.round(route.duration),
               minutes: Math.round(route.duration / 60),
-              hours: Math.round(route.duration / 3600 * 100) / 100,
-              formatted: this.formatDuration(route.duration)
-            }
-          }
-        }
+              hours: Math.round((route.duration / 3600) * 100) / 100,
+              formatted: this.formatDuration(route.duration),
+            },
+          },
+        },
       };
-
     } catch (error) {
       console.error("Distance and time calculation error:", error.message);
-      
+
       if (error.response) {
         const status = error.response.status;
         if (status === 400) {
           throw new Error("Invalid coordinates or route parameters");
         } else if (status === 429) {
-          throw new Error("Routing service rate limit exceeded. Please try again later");
+          throw new Error(
+            "Routing service rate limit exceeded. Please try again later"
+          );
         } else {
-          throw new Error(`Routing service error: ${error.response.data?.message || error.message}`);
+          throw new Error(
+            `Routing service error: ${
+              error.response.data?.message || error.message
+            }`
+          );
         }
       } else if (error.request) {
-        throw new Error("Unable to connect to routing service. Please check your internet connection");
+        throw new Error(
+          "Unable to connect to routing service. Please check your internet connection"
+        );
       } else {
-        throw new Error(error.message || "An unexpected error occurred during route calculation");
+        throw new Error(
+          error.message ||
+            "An unexpected error occurred during route calculation"
+        );
       }
     }
   }
@@ -268,12 +280,12 @@ class MapsService {
    */
   async getAddressSuggestions(query, options = {}) {
     try {
-      if (!query || typeof query !== 'string') {
-        throw new Error('Query is required and must be a string');
+      if (!query || typeof query !== "string") {
+        throw new Error("Query is required and must be a string");
       }
 
       if (!this.apiKey) {
-        throw new Error('MapTiler API key is not configured');
+        throw new Error("MapTiler API key is not configured");
       }
 
       // Trim and validate query length
@@ -283,41 +295,41 @@ class MapsService {
           success: true,
           data: {
             suggestions: [],
-            query: trimmedQuery
-          }
+            query: trimmedQuery,
+          },
         };
       }
 
       // Encode the query for URL
       const encodedQuery = encodeURIComponent(trimmedQuery);
-      
+
       // MapTiler Geocoding API endpoint with autocomplete
       const url = `${this.baseUrl}/geocoding/${encodedQuery}.json`;
-      
+
       const params = {
         key: this.apiKey,
         autocomplete: true,
         limit: options.limit || 5, // Default to 5 suggestions
-        ...options.country && { country: options.country },
-        ...options.proximity && { proximity: options.proximity },
-        ...options.bbox && { bbox: options.bbox },
-        ...options.language && { language: options.language }
+        ...(options.country && { country: options.country }),
+        ...(options.proximity && { proximity: options.proximity }),
+        ...(options.bbox && { bbox: options.bbox }),
+        ...(options.language && { language: options.language }),
       };
 
       const response = await axios.get(url, {
         params,
-        timeout: 10000 // 10 second timeout
+        timeout: 10000, // 10 second timeout
       });
 
       const data = response.data;
-      
+
       if (!data.features) {
         return {
           success: true,
           data: {
             suggestions: [],
-            query: trimmedQuery
-          }
+            query: trimmedQuery,
+          },
         };
       }
 
@@ -328,20 +340,22 @@ class MapsService {
         placeName: feature.place_name,
         coordinates: {
           latitude: feature.geometry.coordinates[1],
-          longitude: feature.geometry.coordinates[0]
+          longitude: feature.geometry.coordinates[0],
         },
         relevance: feature.relevance || 1,
         placeType: feature.place_type || [],
-        context: feature.context ? feature.context.map(ctx => ({
-          id: ctx.id,
-          text: ctx.text,
-          shortCode: ctx.short_code
-        })) : [],
+        context: feature.context
+          ? feature.context.map((ctx) => ({
+              id: ctx.id,
+              text: ctx.text,
+              shortCode: ctx.short_code,
+            }))
+          : [],
         properties: {
           category: feature.properties?.category,
           landmark: feature.properties?.landmark,
-          address: feature.properties?.address
-        }
+          address: feature.properties?.address,
+        },
       }));
 
       return {
@@ -349,30 +363,34 @@ class MapsService {
         data: {
           query: trimmedQuery,
           suggestions,
-          count: suggestions.length
-        }
+          count: suggestions.length,
+        },
       };
-
     } catch (error) {
-      console.error('Address suggestions error:', error.message);
-      
+      console.error("Address suggestions error:", error.message);
+
       if (error.response) {
         const status = error.response.status;
         const message = error.response.data?.message || error.message;
-        
+
         if (status === 401) {
-          throw new Error('Invalid MapTiler API key');
+          throw new Error("Invalid MapTiler API key");
         } else if (status === 429) {
-          throw new Error('API rate limit exceeded. Please try again later');
+          throw new Error("API rate limit exceeded. Please try again later");
         } else if (status === 400) {
-          throw new Error('Invalid query parameters');
+          throw new Error("Invalid query parameters");
         } else {
           throw new Error(`Geocoding API error: ${message}`);
         }
       } else if (error.request) {
-        throw new Error('Unable to connect to geocoding service. Please check your internet connection');
+        throw new Error(
+          "Unable to connect to geocoding service. Please check your internet connection"
+        );
       } else {
-        throw new Error(error.message || 'An unexpected error occurred during address suggestions');
+        throw new Error(
+          error.message ||
+            "An unexpected error occurred during address suggestions"
+        );
       }
     }
   }
@@ -385,7 +403,7 @@ class MapsService {
   formatDuration(seconds) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else {
@@ -408,10 +426,6 @@ class MapsService {
       longitude >= -180 &&
       longitude <= 180
     );
-  }
-
-  async getAutoCompleteSuggestions(input) {
-    
   }
 }
 

@@ -108,10 +108,11 @@ const getDistanceAndTime = async (req, res, next) => {
 
     // Use the service method that integrates OSRM routing
     const result = await mapsService.getDistanceAndTime(origin, destination);
-    
+
     res.status(200).json({
       ...result,
-      message: "Distance and time calculated successfully using real routing data",
+      message:
+        "Distance and time calculated successfully using real routing data",
     });
   } catch (error) {
     console.error("Distance calculation controller error:", error.message);
@@ -146,25 +147,25 @@ const getAutoCompleteSuggestions = async (req, res, next) => {
 
     // Prepare options for the service
     const options = {};
-    if (limit && typeof limit === 'number' && limit > 0 && limit <= 10) {
+    if (limit && typeof limit === "number" && limit > 0 && limit <= 10) {
       options.limit = limit;
     }
-    if (country && typeof country === 'string') {
+    if (country && typeof country === "string") {
       options.country = country;
     }
-    if (proximity && typeof proximity === 'string') {
+    if (proximity && typeof proximity === "string") {
       options.proximity = proximity;
     }
-    if (bbox && typeof bbox === 'string') {
+    if (bbox && typeof bbox === "string") {
       options.bbox = bbox;
     }
-    if (language && typeof language === 'string') {
+    if (language && typeof language === "string") {
       options.language = language;
     }
 
     // Use the service method for address suggestions
     const result = await mapsService.getAddressSuggestions(query, options);
-    
+
     res.status(200).json({
       ...result,
       message: "Address suggestions retrieved successfully",
@@ -176,12 +177,11 @@ const getAutoCompleteSuggestions = async (req, res, next) => {
       error: error.message,
     });
   }
-}
-
+};
 
 module.exports = {
   geocodeAddress,
   reverseGeocodeCoordinates,
   getDistanceAndTime,
-  getAutoCompleteSuggestions
+  getAutoCompleteSuggestions,
 };
