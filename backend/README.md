@@ -1095,6 +1095,131 @@ API error or service unavailable.
 - **Proximity Bias**: Use user's location for proximity-based suggestions
 - **Caching**: Consider caching common queries to improve performance
 
+## Ride Endpoints
+
+### Create Ride
+
+Create a new ride request with fare calculation.
+
+**URL**: `/api/rides/create`
+
+**Method**: `POST`
+
+**Authentication**: Required (User Bearer Token)
+
+#### Headers
+
+| Header | Type | Description | Required |
+|--------|------|-------------|----------|
+| Authorization | String | Bearer token for user authentication | Yes |
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| pickup | String | Pickup address | Required, min length: 3 |
+| destination | String | Destination address | Required, min length: 3 |
+| vehicleType | String | Type of vehicle requested | Required, enum: ["auto", "car", "moto"] |
+
+**Example Request**:
+```json
+{
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY",
+  "vehicleType": "car"
+}
+```
+
+#### Responses
+
+**Status Code: 201 Created**
+
+Ride successfully created with fare calculation.
+
+```json
+{
+  "ride": {
+    "_id": "ride_id",
+    "user": "user_id",
+    "pickup": "Times Square, New York, NY",
+    "destination": "Central Park, New York, NY",
+    "fare": 95.5,
+    "status": "pending",
+    "otp": "1234",
+    "__v": 0
+  },
+  "message": "Ride created successfully"
+}
+```
+
+**Status Code: 400 Bad Request**
+
+Invalid request body or validation error.
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid pickup address",
+      "param": "pickup",
+      "location": "body"
+    }
+  ]
+}
+```
+
+OR
+
+```json
+{
+  "error": "All fields are required"
+}
+```
+
+**Status Code: 401 Unauthorized**
+
+Invalid or missing authentication token.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+#### Implementation Details
+
+1. **Fare Calculation**: Automatically calculates fare based on distance and estimated travel time
+2. **Route Analysis**: Uses Maps service to get accurate distance and duration
+3. **OTP Generation**: Generates a 4-digit OTP for ride verification
+4. **Vehicle-Specific Pricing**: Different rates for auto, car, and moto
+5. **Status Management**: Ride starts with "pending" status
+
+#### Fare Calculation Formula
+
+**Base Fare**:
+- Auto: ₹30
+- Car: ₹50  
+- Moto: ₹20
+
+**Per Kilometer Rate**:
+- Auto: ₹10/km
+- Car: ₹15/km
+- Moto: ₹8/km
+
+**Per Minute Rate**:
+- Auto: ₹2/min
+- Car: ₹3/min  
+- Moto: ₹1.5/min
+
+**Total Fare** = Base Fare + (Distance in km × Per km rate) + (Duration in minutes × Per minute rate)
+
+#### Security Considerations
+
+- Requires user authentication
+- OTP is marked as `select: false` in database queries for security
+- Validates all input parameters
+- Uses secure random OTP generation
+
 ## Error Handling
 
 All endpoints follow consistent error response format:

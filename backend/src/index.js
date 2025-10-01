@@ -9,6 +9,7 @@ const userRoutes = require("./routes/user.routes");
 const captainRoutes = require("./routes/captain.routes");
 const mapsRoutes = require("./routes/maps.routes");
 const cookieParser = require("cookie-parser");
+const rideRoutes = require("./routes/ride.routes");
 
 dbConnect();
 
@@ -24,5 +25,6 @@ app.get("/health", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/captains", captainRoutes);
 app.use("/api/maps", mapsRoutes);
+app.use("/api/rides", rideRoutes);
 
 module.exports = app;

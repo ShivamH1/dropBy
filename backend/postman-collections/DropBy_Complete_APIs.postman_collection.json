@@ -465,6 +465,93 @@
         }
       ],
       "description": "All Maps-related API endpoints (requires user authentication)"
+    },
+    {
+      "name": "Ride APIs",
+      "item": [
+        {
+          "name": "Create Ride - Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": \"Times Square, New York, NY\",\n  \"destination\": \"Central Park, New York, NY\",\n  \"vehicleType\": \"car\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "create"]
+            },
+            "description": "Create a new ride request with car vehicle type. Automatically calculates fare based on distance and travel time."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Ride - Auto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": \"Times Square, New York, NY\",\n  \"destination\": \"Central Park, New York, NY\",\n  \"vehicleType\": \"auto\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "create"]
+            },
+            "description": "Create a new ride request with auto rickshaw vehicle type. More economical option with lower fare rates."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Ride - Moto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": \"Times Square, New York, NY\",\n  \"destination\": \"Central Park, New York, NY\",\n  \"vehicleType\": \"moto\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "create"]
+            },
+            "description": "Create a new ride request with motorcycle vehicle type. Fastest and cheapest option for single passenger."
+          },
+          "response": []
+        }
+      ],
+      "description": "All Ride-related API endpoints (requires user authentication)"
     }
   ]
 }

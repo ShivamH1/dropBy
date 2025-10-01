@@ -8,6 +8,7 @@ This directory contains Postman collections for testing all the APIs in the Drop
 - **`User_APIs.postman_collection.json`** - User authentication and profile APIs
 - **`Captain_APIs.postman_collection.json`** - Captain authentication and profile APIs  
 - **`Maps_APIs.postman_collection.json`** - Maps and location services APIs
+- **`Ride_APIs.postman_collection.json`** - Ride booking and management APIs
 
 ### 2. Complete Collection
 - **`DropBy_Complete_APIs.postman_collection.json`** - All APIs in one organized collection
@@ -50,6 +51,10 @@ Each collection includes these variables:
 - `POST /distance` - Get real driving distance and time using OSRM routing (requires user auth)
 - `POST /suggestions` - Get address suggestions/autocomplete using MapTiler API (requires user auth)
 
+### Ride APIs (`/api/rides`)
+- `POST /create` - Create new ride request with fare calculation (requires user auth)
+- `POST /get-fare` - Get fare estimates for all vehicle types (requires user auth)
+
 ## Usage Guide
 
 ### 1. Start the Server
@@ -89,6 +94,16 @@ First, run the "Health Check" request to ensure the server is responding.
 3. **Reverse Geocode**: Convert coordinates to addresses using MapTiler API
 4. **Distance**: Get real driving distance and time using OSRM routing (not estimates!)
 5. **Suggestions**: Get address autocomplete suggestions as user types
+
+### 5. Ride APIs
+**Note**: Ride APIs require user authentication (userToken)
+
+1. First login as a user to get the `userToken`
+2. **Create Ride**: Book a new ride with automatic fare calculation
+   - Choose from vehicle types: `auto`, `car`, `moto`
+   - Automatically calculates fare based on distance and time
+   - Generates secure OTP for ride verification
+3. **Get Fare**: Get fare estimates for all vehicle types before booking
 
 ## Sample Data
 
@@ -162,6 +177,37 @@ First, run the "Health Check" request to ensure the server is responding.
 }
 ```
 
+### Ride API Sample Data
+
+#### Create Ride Request
+```json
+{
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY",
+  "vehicleType": "car"
+}
+```
+
+#### Get Fare Request
+```json
+{
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY"
+}
+```
+
+#### Vehicle Types & Pricing
+- **auto**: Base ₹30, ₹10/km, ₹2/min (most economical)
+- **car**: Base ₹50, ₹15/km, ₹3/min (comfortable)
+- **moto**: Base ₹20, ₹8/km, ₹1.5/min (fastest for single passenger)
+
+### Ride API Features
+- **Smart Fare Calculation**: Uses real distance and time for accurate pricing
+- **Multiple Vehicle Options**: Auto, car, and motorcycle with different rates
+- **Secure OTP Generation**: 4-digit OTP for ride verification
+- **Real-time Routing**: Integrates with Maps API for accurate route calculation
+- **Status Management**: Tracks ride status from pending to completion
+
 ### Maps API Features
 - **Real Routing**: Uses OSRM for actual road-based routing (not straight-line distance)
 - **Accurate Times**: Provides real driving time estimates based on road conditions
@@ -221,7 +267,8 @@ npm start
 - All collections are configured for `http://localhost:8080`
 - Tokens are automatically managed through test scripts
 - Maps APIs require user authentication (not captain authentication)
-- Vehicle types are validated on captain registration
+- Ride APIs require user authentication (not captain authentication)
+- Vehicle types are validated on captain registration and ride creation
 - All password fields should be at least 6 characters
 - Email validation is enforced on registration and login
 
