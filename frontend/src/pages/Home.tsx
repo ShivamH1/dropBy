@@ -7,6 +7,7 @@ import VehiclePanel from "../components/VehiclePanel";
 import ConfirmRide from "../components/ConfirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
+import { createRide, getFare } from "../service/API/rideAPIs";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -25,8 +26,99 @@ const Home = () => {
   const [vehicleFound, setVehicleFound] = useState(false);
   const [waitingForDriver, setWaitingForDriver] = useState(false);
 
+  // New states for API integration
+  const [activeField, setActiveField] = useState(""); // "pickup" or "destination"
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [rideData, setRideData] = useState(null);
+  const [isCreatingRide, setIsCreatingRide] = useState(false);
+  const [fareData, setFareData] = useState(null);
+  const [isFetchingFare, setIsFetchingFare] = useState(false);
+  const [pickupCompleted, setPickupCompleted] = useState(false);
+  const [destinationCompleted, setDestinationCompleted] = useState(false);
+
   const submitHandler = (e) => {
     e.preventDefault();
+  };
+
+  // Handle location selection from suggestions
+  const handleLocationSelection = (selectedAddress) => {
+    if (activeField === "pickup") {
+      setPickup(selectedAddress);
+      setPickupCompleted(true);
+    } else if (activeField === "destination") {
+      setDestination(selectedAddress);
+      setDestinationCompleted(true);
+    }
+  };
+
+  // Handle Find Trip button click - fetch fare data
+  const handleFindTrip = async () => {
+    if (!pickup || !destination) {
+      console.error("Pickup and destination are required");
+      return;
+    }
+
+    setIsFetchingFare(true);
+    try {
+      const response = await getFare({
+        pickup,
+        destination
+      });
+
+      if (response.data.fare) {
+        setFareData(response.data.fare);
+        setVehiclePanel(true);
+        setPanelOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to fetch fare data:", error);
+      // Set fallback fare data and still open panel
+      setFareData({
+        auto: 118.86,
+        car: 193.20,
+        moto: 65.00
+      });
+      setVehiclePanel(true);
+      setPanelOpen(false);
+    } finally {
+      setIsFetchingFare(false);
+    }
+  };
+  console.log("fareDataHome", fareData);
+
+  // Create ride function
+  const handleCreateRide = async (vehicleType, vehicleName, fare) => {
+    if (!pickup || !destination) {
+      console.error("Pickup and destination are required");
+      return;
+    }
+
+    setIsCreatingRide(true);
+    try {
+      const response = await createRide({
+        pickup,
+        destination,
+        vehicleType
+      });
+
+      if (response.data.ride) {
+        // Include the selected vehicle information with the ride data
+        setRideData({
+          ...response.data.ride,
+          vehicleType,
+          vehicleName,
+          selectedFare: fare
+        });
+        setVehicleFound(true);
+        setConfirmRidePanel(false);
+        console.log("Ride created successfully:", response.data.ride);
+      }
+    } catch (error) {
+      console.error("Failed to create ride:", error);
+      // Handle error - maybe show toast notification
+    } finally {
+      setIsCreatingRide(false);
+    }
   };
 
   useGSAP(
@@ -151,10 +243,13 @@ const Home = () => {
             <input
               onClick={() => {
                 setPanelOpen(true);
+                setActiveField("pickup");
+                setPickupCompleted(false); // Reset completion state when user starts editing
               }}
               value={pickup}
               onChange={(e) => {
                 setPickup(e.target.value);
+                setPickupCompleted(false); // Reset completion state when user types
               }}
               className="bg-[#eee] px-12 py-2 text-lg rounded-lg w-full"
               type="text"
@@ -163,10 +258,13 @@ const Home = () => {
             <input
               onClick={() => {
                 setPanelOpen(true);
+                setActiveField("destination");
+                setDestinationCompleted(false); // Reset completion state when user starts editing
               }}
               value={destination}
               onChange={(e) => {
                 setDestination(e.target.value);
+                setDestinationCompleted(false); // Reset completion state when user types
               }}
               className="bg-[#eee] px-12 py-2 text-lg rounded-lg w-full  mt-3"
               type="text"
@@ -178,6 +276,14 @@ const Home = () => {
           <LocationSearchPanel
             setPanelOpen={setPanelOpen}
             setVehiclePanel={setVehiclePanel}
+            setSelectedLocation={handleLocationSelection}
+            pickup={pickup}
+            destination={destination}
+            activeField={activeField}
+            onFindTrip={handleFindTrip}
+            isFetchingFare={isFetchingFare}
+            pickupCompleted={pickupCompleted}
+            destinationCompleted={destinationCompleted}
           />
         </div>
       </div>
@@ -188,6 +294,10 @@ const Home = () => {
         <VehiclePanel
           setConfirmRidePanel={setConfirmRidePanel}
           setVehiclePanel={setVehiclePanel}
+          setSelectedVehicle={setSelectedVehicle}
+          pickup={pickup}
+          destination={destination}
+          fareData={fareData}
         />
       </div>
       <div
@@ -197,19 +307,30 @@ const Home = () => {
         <ConfirmRide
           setConfirmRidePanel={setConfirmRidePanel}
           setVehicleFound={setVehicleFound}
+          selectedVehicle={selectedVehicle}
+          pickup={pickup}
+          destination={destination}
+          onCreateRide={handleCreateRide}
+          isCreatingRide={isCreatingRide}
         />
       </div>
       <div
         ref={vehicleFoundRef}
         className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"
       >
-        <LookingForDriver setVehicleFound={setVehicleFound} />
+        <LookingForDriver 
+          setVehicleFound={setVehicleFound}
+          rideData={rideData}
+        />
       </div>
       <div
         ref={waitingForDriverRef}
         className="fixed w-full  z-10 bottom-0  bg-white px-3 py-6 pt-12"
       >
-        <WaitingForDriver waitingForDriver={waitingForDriver} />
+        <WaitingForDriver 
+          waitingForDriver={waitingForDriver}
+          rideData={rideData}
+        />
       </div>
     </div>
   );

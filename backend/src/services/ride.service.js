@@ -78,4 +78,5 @@ async function createRide({ user, pickup, destination, vehicleType }) {
 
 module.exports = {
   createRide,
+  getFare
 };

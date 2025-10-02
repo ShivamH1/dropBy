@@ -24,4 +24,22 @@ router.post(
   rideController.createRide
 );
 
+router.post(
+  "/get-fare",
+  authMiddleware.authUser,
+  [
+    body("pickup").notEmpty().withMessage("Pickup is required"),
+    body("pickup").isString().withMessage("Pickup must be a string"),
+    body("pickup")
+      .isLength({ min: 3 })
+      .withMessage("Pickup must be at least 3 characters"),
+    body("destination").notEmpty().withMessage("Destination is required"),
+    body("destination").isString().withMessage("Destination must be a string"),
+    body("destination")
+      .isLength({ min: 3 })
+      .withMessage("Destination must be at least 3 characters"),
+  ],
+  rideController.getFare
+);
+
 module.exports = router;
