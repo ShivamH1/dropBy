@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import "remixicon/fonts/remixicon.css";
@@ -8,6 +8,8 @@ import ConfirmRide from "../components/ConfirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
 import { createRide, getFare } from "../service/API/rideAPIs";
+import { useUser } from "../service/context/UserContext";
+import { useSocket } from "../service/context/SocketClientContext";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -36,6 +38,13 @@ const Home = () => {
   const [pickupCompleted, setPickupCompleted] = useState(false);
   const [destinationCompleted, setDestinationCompleted] = useState(false);
 
+  const { user } = useUser();
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    socket.emit("join", { userId: user.user._id, userType: "user" });
+  }, [socket, user]);
+
   const submitHandler = (e) => {
     e.preventDefault();
   };
@@ -62,7 +71,7 @@ const Home = () => {
     try {
       const response = await getFare({
         pickup,
-        destination
+        destination,
       });
 
       if (response.data.fare) {
@@ -75,8 +84,8 @@ const Home = () => {
       // Set fallback fare data and still open panel
       setFareData({
         auto: 118.86,
-        car: 193.20,
-        moto: 65.00
+        car: 193.2,
+        moto: 65.0,
       });
       setVehiclePanel(true);
       setPanelOpen(false);
@@ -84,7 +93,6 @@ const Home = () => {
       setIsFetchingFare(false);
     }
   };
-  console.log("fareDataHome", fareData);
 
   // Create ride function
   const handleCreateRide = async (vehicleType, vehicleName, fare) => {
@@ -98,7 +106,7 @@ const Home = () => {
       const response = await createRide({
         pickup,
         destination,
-        vehicleType
+        vehicleType,
       });
 
       if (response.data.ride) {
@@ -107,11 +115,10 @@ const Home = () => {
           ...response.data.ride,
           vehicleType,
           vehicleName,
-          selectedFare: fare
+          selectedFare: fare,
         });
         setVehicleFound(true);
         setConfirmRidePanel(false);
-        console.log("Ride created successfully:", response.data.ride);
       }
     } catch (error) {
       console.error("Failed to create ride:", error);
@@ -318,7 +325,7 @@ const Home = () => {
         ref={vehicleFoundRef}
         className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"
       >
-        <LookingForDriver 
+        <LookingForDriver
           setVehicleFound={setVehicleFound}
           rideData={rideData}
         />
@@ -327,7 +334,7 @@ const Home = () => {
         ref={waitingForDriverRef}
         className="fixed w-full  z-10 bottom-0  bg-white px-3 py-6 pt-12"
       >
-        <WaitingForDriver 
+        <WaitingForDriver
           waitingForDriver={waitingForDriver}
           rideData={rideData}
         />

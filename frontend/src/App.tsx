@@ -17,6 +17,7 @@ import CaptainProtectedWrapper from "./pages/CaptainProtectedWrapper";
 import Home from "./pages/Home";
 import CaptainRiding from "./pages/CaptainRiding";
 import Riding from "./pages/Riding";
+import SocketProvider from "./service/context/SocketClientContext";
 import "remixicon/fonts/remixicon.css";
 
 const queryClient = new QueryClient();
@@ -26,38 +27,40 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <UserContext>
-          <CaptainContext>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route
-                path="/home"
-                element={
-                  <UserProtectedWrapper>
-                    <Home />
-                  </UserProtectedWrapper>
-                }
-              />
-              <Route
-                path="/captain-home"
-                element={
-                  <CaptainProtectedWrapper>
-                    <CaptainHome />
-                  </CaptainProtectedWrapper>
-                }
-              />
-              <Route path="/user/login" element={<UserLogin />} />
-              <Route path="/user/signup" element={<UserSignup />} />
-              <Route path="/riding" element={<Riding />} />
-              <Route path="/captain-riding" element={<CaptainRiding />} />
-              <Route path="/captain/login" element={<CaptainLogin />} />
-              <Route path="/captain/signup" element={<CaptainSignup />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </CaptainContext>
-        </UserContext>
-      </BrowserRouter>
+      <SocketProvider>
+        <BrowserRouter>
+          <UserContext>
+            <CaptainContext>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route
+                  path="/home"
+                  element={
+                    <UserProtectedWrapper>
+                      <Home />
+                    </UserProtectedWrapper>
+                  }
+                />
+                <Route
+                  path="/captain-home"
+                  element={
+                    <CaptainProtectedWrapper>
+                      <CaptainHome />
+                    </CaptainProtectedWrapper>
+                  }
+                />
+                <Route path="/user/login" element={<UserLogin />} />
+                <Route path="/user/signup" element={<UserSignup />} />
+                <Route path="/riding" element={<Riding />} />
+                <Route path="/captain-riding" element={<CaptainRiding />} />
+                <Route path="/captain/login" element={<CaptainLogin />} />
+                <Route path="/captain/signup" element={<CaptainSignup />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </CaptainContext>
+          </UserContext>
+        </BrowserRouter>
+      </SocketProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

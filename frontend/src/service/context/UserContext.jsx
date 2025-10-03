@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { userProfile } from "../API/userAPIs";
-import { getToken, removeToken, setToken } from "../../utils/cookieUtils";
+import { getToken, removeToken, setToken, getUserType, setUserType, clearAuth } from "../../utils/cookieUtils";
 
 export const UserData = createContext();
 
@@ -23,7 +23,10 @@ function UserContext({ children }) {
   useEffect(() => {
     const initializeUser = async () => {
       const token = getToken();
-      if (token) {
+      const userType = getUserType();
+      
+      // Only initialize if token exists AND user type is 'user'
+      if (token && userType === 'user') {
         try {
           setIsLoading(true);
           const response = await userProfile();
@@ -54,6 +57,7 @@ function UserContext({ children }) {
     setError(null);
     if (token) {
       setToken(token);
+      setUserType('user'); // Set user type as 'user'
     }
   };
 
@@ -69,7 +73,7 @@ function UserContext({ children }) {
     });
     setIsAuthenticated(false);
     setError(null);
-    removeToken();
+    clearAuth(); // Clear both token and user type
   };
 
   // Update user profile

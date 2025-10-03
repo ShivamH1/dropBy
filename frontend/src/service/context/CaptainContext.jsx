@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { captainProfile } from "../API/captainAPIs";
-import { getToken, removeToken, setToken } from "../../utils/cookieUtils";
+import { getToken, removeToken, setToken, getUserType, setUserType, clearAuth } from "../../utils/cookieUtils";
 
 export const CaptainData = createContext();
 
@@ -36,7 +36,10 @@ function CaptainContext({ children }) {
   useEffect(() => {
     const initializeCaptain = async () => {
       const token = getToken();
-      if (token) {
+      const userType = getUserType();
+      
+      // Only initialize if token exists AND user type is 'captain'
+      if (token && userType === 'captain') {
         try {
           setIsLoading(true);
           const response = await captainProfile();
@@ -67,6 +70,7 @@ function CaptainContext({ children }) {
     setError(null);
     if (token) {
       setToken(token);
+      setUserType('captain'); // Set user type as 'captain'
     }
   };
 
@@ -95,7 +99,7 @@ function CaptainContext({ children }) {
     setError(null);
     setActiveRide(null);
     setRides([]);
-    removeToken();
+    clearAuth(); // Clear both token and user type
   };
 
   // Update captain profile

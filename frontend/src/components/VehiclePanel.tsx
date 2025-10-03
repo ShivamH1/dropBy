@@ -48,7 +48,6 @@ const VehiclePanel = (props) => {
 
       {vehicleTypes.map((vehicle) => {
         const fare = props.fareData ? props.fareData[vehicle.type] : null;
-        console.log(fare);
         
         return (
           <div

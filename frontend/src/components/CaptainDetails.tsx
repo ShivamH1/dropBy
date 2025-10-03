@@ -13,7 +13,7 @@ const CaptainDetails = () => {
             alt=""
           />
           <h4 className="text-lg font-medium">
-            {captain.captain.fullName.firstName} {captain.captain.fullName.lastName}
+            {captain.captain.captain.fullName.firstName} {captain.captain.captain.fullName.lastName}
           </h4>
         </div>
         <div>

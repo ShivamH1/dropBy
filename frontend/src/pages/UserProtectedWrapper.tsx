@@ -21,6 +21,7 @@ function UserProtectedWrapper({ children }: { children: React.ReactNode }) {
       .then((response) => {
         if (response.status === 200) {
           setUser(response.data);
+          console.log("user", response.data.user);
           setIsLoading(false);
         }
       })
