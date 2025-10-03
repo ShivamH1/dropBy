@@ -7,8 +7,12 @@ let io;
 function initializeSocket(server) {
   io = socketIo(server, {
     cors: {
-      origin: "*",
+      origin: [
+        "http://localhost:5173", // Development
+        "https://drop-by.vercel.app" // Production frontend
+      ],
       methods: ["GET", "POST"],
+      credentials: true
     },
   });
 
