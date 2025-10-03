@@ -45,3 +45,60 @@ export const getFare = async (fareData: {
     throw error;
   }
 };
+
+// Confirm ride (Captain accepts the ride)
+export const confirmRide = async (rideId: string) => {
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/rides/confirm`,
+      { rideId },
+      {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("Confirm ride error:", error);
+    throw error;
+  }
+};
+
+// Start ride (Captain starts the ride with OTP)
+export const startRide = async (rideId: string, otp: string) => {
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/rides/start`,
+      { rideId, otp },
+      {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("Start ride error:", error);
+    throw error;
+  }
+};
+
+// End ride (Captain completes the ride)
+export const endRide = async (rideId: string) => {
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/rides/end`,
+      { rideId },
+      {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("End ride error:", error);
+    throw error;
+  }
+};

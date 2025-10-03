@@ -1,4 +1,5 @@
 const axios = require("axios");
+const captainsModel = require("../models/captainsModel");
 
 /**
  * Maps service for handling geocoding and location-related operations
@@ -393,6 +394,18 @@ class MapsService {
         );
       }
     }
+  }
+
+  async getCaptainsInTheRadius(ltd, lng, radius) {
+    const captains = await captainsModel.find({
+      location: {
+        $geoWithin: {
+          $centerSphere: [[ltd, lng], radius / 6371],
+        },
+      },
+    });
+
+    return captains;
   }
 
   /**

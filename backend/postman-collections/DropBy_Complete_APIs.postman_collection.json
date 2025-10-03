@@ -19,6 +19,11 @@
       "key": "captainToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "rideId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -549,9 +554,117 @@
             "description": "Create a new ride request with motorcycle vehicle type. Fastest and cheapest option for single passenger."
           },
           "response": []
+        },
+        {
+          "name": "Get Fare Estimate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": \"Times Square, New York, NY\",\n  \"destination\": \"Central Park, New York, NY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/get-fare",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "get-fare"]
+            },
+            "description": "Get fare estimates for all vehicle types without creating a ride. Useful for showing pricing to users before booking."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Ride (Captain)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{captainToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": \"{{rideId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "confirm"]
+            },
+            "description": "Captain confirms acceptance of a ride request. Changes ride status from 'pending' to 'accepted' and assigns captain to the ride."
+          },
+          "response": []
+        },
+        {
+          "name": "Start Ride (Captain)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{captainToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": \"{{rideId}}\",\n  \"otp\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "start"]
+            },
+            "description": "Captain starts the ride after OTP verification with user. Requires valid 4-digit OTP and changes status to 'ongoing'."
+          },
+          "response": []
+        },
+        {
+          "name": "End Ride (Captain)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{captainToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": \"{{rideId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "end"]
+            },
+            "description": "Captain completes the ride when destination is reached. Changes ride status to 'completed' and notifies user."
+          },
+          "response": []
         }
       ],
-      "description": "All Ride-related API endpoints (requires user authentication)"
+      "description": "All Ride-related API endpoints (user: create, get-fare; captain: confirm, start, end)"
     }
   ]
 }

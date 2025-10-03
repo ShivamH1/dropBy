@@ -45,6 +45,37 @@ const Home = () => {
     socket.emit("join", { userId: user.user._id, userType: "user" });
   }, [socket, user]);
 
+  useEffect(() => {
+    const handleRideConfirmed = (data: any) => {
+      console.log("Ride confirmed:", data);
+      setRideData(data);
+      setVehicleFound(false);
+      setWaitingForDriver(true);
+    };
+
+    const handleRideStarted = (data: any) => {
+      console.log("Ride started:", data);
+      setWaitingForDriver(false);
+      // Navigate to riding page
+      window.location.href = "/riding";
+    };
+
+    const handleRideEnded = (data: any) => {
+      console.log("Ride ended:", data);
+      // Handle ride completion
+    };
+
+    socket.on("ride-confirmed", handleRideConfirmed);
+    socket.on("ride-started", handleRideStarted);
+    socket.on("ride-ended", handleRideEnded);
+
+    return () => {
+      socket.off("ride-confirmed", handleRideConfirmed);
+      socket.off("ride-started", handleRideStarted);
+      socket.off("ride-ended", handleRideEnded);
+    };
+  }, [socket]);
+
   const submitHandler = (e) => {
     e.preventDefault();
   };

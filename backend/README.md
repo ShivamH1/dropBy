@@ -1,31 +1,125 @@
-# DropBy API Documentation
+# DropBy Backend API Documentation
 
-## User Endpoints
+A comprehensive ride-sharing and delivery platform backend built with Node.js, Express, MongoDB, and Socket.io.
+
+## 🚀 Server Information
+
+- **Base URL**: `http://localhost:8080`
+- **Protocol**: HTTP/HTTPS with WebSocket support for real-time features
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT tokens with blacklisting support
+
+## 🔧 Setup & Installation
+
+### Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (v5.0 or higher) 
+- MapTiler API Key (for maps services)
+
+### Environment Variables
+Create a `.env` file in the backend root:
+
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/dropby
+
+# JWT Authentication  
+JWT_SECRET=your_jwt_secret_key_here
+
+# Maps Service
+MAPTILER_API_KEY=your_maptiler_api_key_here
+
+# Server Configuration
+PORT=8080
+NODE_ENV=development
+```
+
+### Installation
+```bash
+cd backend
+npm install
+npm start
+```
+
+Server will start on `http://localhost:8080`
+
+## 🏗️ Architecture
+
+```
+backend/
+├── src/
+│   ├── controllers/       # Request handlers
+│   │   ├── user.controller.js
+│   │   ├── captain.controller.js  
+│   │   ├── maps.controller.js
+│   │   └── ride.controller.js
+│   ├── models/           # MongoDB schemas
+│   │   ├── userModel.js
+│   │   ├── captainsModel.js
+│   │   ├── rideModel.js
+│   │   └── blackListToken.model.js
+│   ├── routes/           # API endpoints
+│   │   ├── user.routes.js
+│   │   ├── captain.routes.js
+│   │   ├── maps.routes.js
+│   │   └── ride.routes.js
+│   ├── services/         # Business logic
+│   │   ├── user.service.js
+│   │   ├── captain.service.js
+│   │   ├── maps.service.js
+│   │   └── ride.service.js
+│   ├── middlewares/      # Auth & validation
+│   │   └── auth.middleware.js
+│   ├── db/              # Database connection
+│   │   └── db.js
+│   ├── socket.js        # Real-time features
+│   ├── index.js         # Express app setup
+│   └── server.js        # Server startup
+└── postman-collections/ # API testing
+```
+
+## 🔐 Authentication
+
+All protected routes require JWT token via:
+- **Header**: `Authorization: Bearer <token>`
+- **Cookie**: `token=<jwt_token>`
+
+### Token Management
+- **Expiration**: 24 hours
+- **Blacklisting**: Logout invalidates tokens
+- **Middleware**: `authUser` for users, `authCaptain` for captains
+
+## 📋 API Endpoints
+
+### Health Check
+- `GET /health` - Server status check
+
+---
+
+## 👤 User Endpoints
 
 ### Register User
 
 Register a new user in the system.
 
-**URL**: `/api/users/register`
-
-**Method**: `POST`
-
+**URL**: `/api/users/register`  
+**Method**: `POST`  
 **Authentication**: Not required
 
 #### Request Body
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
-| fullName.firstName | String | User's first name | Required, min length: 3, max length: 20 |
-| fullName.lastName | String | User's last name | Required, min length: 3, max length: 20 |
-| email | String | User's email address | Required, valid email format, min length: 3, max length: 20 |
+| fullName.firstName | String | User's first name | Required, min length: 3 |
+| fullName.lastName | String | User's last name | Required, min length: 3 |
+| email | String | User's email address | Required, valid email format |
 | password | String | User's password | Required, min length: 6 |
 
 **Example Request**:
 ```json
 {
   "fullName": {
-    "firstName": "John",
+    "firstName": "John", 
     "lastName": "Doe"
   },
   "email": "john.doe@example.com",
@@ -36,9 +130,6 @@ Register a new user in the system.
 #### Responses
 
 **Status Code: 201 Created**
-
-User successfully registered.
-
 ```json
 {
   "token": "jwt_authentication_token",
@@ -49,32 +140,22 @@ User successfully registered.
     },
     "email": "john.doe@example.com",
     "_id": "user_id",
+    "socketId": null,
     "__v": 0
   }
 }
 ```
 
 **Status Code: 400 Bad Request**
-
-Invalid request body or validation error.
-
 ```json
 {
   "errors": [
     {
       "msg": "First name is required",
-      "param": "fullName.firstName",
+      "param": "fullName.firstName", 
       "location": "body"
     }
   ]
-}
-```
-
-OR
-
-```json
-{
-  "error": "Error message"
 }
 ```
 
@@ -1095,23 +1176,15 @@ API error or service unavailable.
 - **Proximity Bias**: Use user's location for proximity-based suggestions
 - **Caching**: Consider caching common queries to improve performance
 
-## Ride Endpoints
+## 🚗 Ride Endpoints
 
 ### Create Ride
 
-Create a new ride request with fare calculation.
+Create a new ride request with automatic fare calculation and captain notification.
 
-**URL**: `/api/rides/create`
-
-**Method**: `POST`
-
+**URL**: `/api/rides/create`  
+**Method**: `POST`  
 **Authentication**: Required (User Bearer Token)
-
-#### Headers
-
-| Header | Type | Description | Required |
-|--------|------|-------------|----------|
-| Authorization | String | Bearer token for user authentication | Yes |
 
 #### Request Body
 
@@ -1125,7 +1198,7 @@ Create a new ride request with fare calculation.
 ```json
 {
   "pickup": "Times Square, New York, NY",
-  "destination": "Central Park, New York, NY",
+  "destination": "Central Park, New York, NY", 
   "vehicleType": "car"
 }
 ```
@@ -1133,9 +1206,6 @@ Create a new ride request with fare calculation.
 #### Responses
 
 **Status Code: 201 Created**
-
-Ride successfully created with fare calculation.
-
 ```json
 {
   "ride": {
@@ -1145,82 +1215,324 @@ Ride successfully created with fare calculation.
     "destination": "Central Park, New York, NY",
     "fare": 95.5,
     "status": "pending",
-    "otp": "1234",
+    "vehicleType": "car",
     "__v": 0
   },
   "message": "Ride created successfully"
 }
 ```
 
-**Status Code: 400 Bad Request**
+**Status Code: 400 Bad Request** - Invalid request or validation error
+**Status Code: 401 Unauthorized** - Missing or invalid authentication token
 
-Invalid request body or validation error.
+#### Implementation Details
+- **Automatic Fare Calculation** based on real distance and time
+- **OTP Generation** for secure ride verification
+- **Captain Notification** via Socket.io to nearby captains (2km radius)
+- **Real-time Updates** sent to matching captains
 
+---
+
+### Get Fare Estimates
+
+Get fare estimates for all vehicle types before booking.
+
+**URL**: `/api/rides/get-fare`  
+**Method**: `POST`  
+**Authentication**: Required (User Bearer Token)
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| pickup | String | Pickup address | Required, min length: 3 |
+| destination | String | Destination address | Required, min length: 3 |
+
+**Example Request**:
 ```json
 {
-  "errors": [
-    {
-      "msg": "Invalid pickup address",
-      "param": "pickup",
-      "location": "body"
-    }
-  ]
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY"
 }
 ```
 
-OR
+#### Responses
 
+**Status Code: 200 OK**
 ```json
 {
-  "error": "All fields are required"
+  "auto": 87.5,
+  "car": 125.8, 
+  "moto": 65.2
 }
 ```
 
-**Status Code: 401 Unauthorized**
+---
 
-Invalid or missing authentication token.
+### Confirm Ride (Captain)
 
+Captain confirms acceptance of a ride request.
+
+**URL**: `/api/rides/confirm`  
+**Method**: `POST`  
+**Authentication**: Required (Captain Bearer Token)
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| rideId | String | MongoDB ObjectId of the ride | Required, valid MongoDB ID |
+
+**Example Request**:
 ```json
 {
-  "error": "Unauthorized"
+  "rideId": "60f7b3b3b3f3b3b3b3f3b3b3"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+```json
+{
+  "_id": "ride_id",
+  "user": {...},
+  "captain": "captain_id",
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY",
+  "fare": 95.5,
+  "status": "accepted",
+  "vehicleType": "car",
+  "__v": 0
 }
 ```
 
 #### Implementation Details
+- **Status Update**: Changes ride status from "pending" to "accepted"
+- **Captain Assignment**: Links captain to the ride
+- **User Notification**: Sends real-time update to user via Socket.io
 
-1. **Fare Calculation**: Automatically calculates fare based on distance and estimated travel time
-2. **Route Analysis**: Uses Maps service to get accurate distance and duration
-3. **OTP Generation**: Generates a 4-digit OTP for ride verification
-4. **Vehicle-Specific Pricing**: Different rates for auto, car, and moto
-5. **Status Management**: Ride starts with "pending" status
+---
 
-#### Fare Calculation Formula
+### Start Ride (Captain)
 
-**Base Fare**:
-- Auto: ₹30
-- Car: ₹50  
-- Moto: ₹20
+Captain starts the ride after OTP verification.
 
-**Per Kilometer Rate**:
-- Auto: ₹10/km
-- Car: ₹15/km
-- Moto: ₹8/km
+**URL**: `/api/rides/start`  
+**Method**: `POST`  
+**Authentication**: Required (Captain Bearer Token)
 
-**Per Minute Rate**:
-- Auto: ₹2/min
-- Car: ₹3/min  
-- Moto: ₹1.5/min
+#### Request Body
 
-**Total Fare** = Base Fare + (Distance in km × Per km rate) + (Duration in minutes × Per minute rate)
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| rideId | String | MongoDB ObjectId of the ride | Required, valid MongoDB ID |
+| otp | String | 4-digit OTP from user | Required, exactly 4 characters |
+
+**Example Request**:
+```json
+{
+  "rideId": "60f7b3b3b3f3b3b3b3f3b3b3",
+  "otp": "1234"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+```json
+{
+  "_id": "ride_id",
+  "user": {...},
+  "captain": {...},
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY", 
+  "fare": 95.5,
+  "status": "ongoing",
+  "vehicleType": "car",
+  "__v": 0
+}
+```
+
+**Status Code: 400 Bad Request** - Invalid OTP or ride not found
+**Status Code: 401 Unauthorized** - Invalid captain token
+
+#### Implementation Details
+- **OTP Verification**: Validates 4-digit OTP against ride record
+- **Status Update**: Changes ride status to "ongoing"
+- **Real-time Update**: Notifies user that ride has started
+
+---
+
+### End Ride (Captain)
+
+Captain completes the ride when destination is reached.
+
+**URL**: `/api/rides/end`  
+**Method**: `POST`  
+**Authentication**: Required (Captain Bearer Token)
+
+#### Request Body
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| rideId | String | MongoDB ObjectId of the ride | Required, valid MongoDB ID |
+
+**Example Request**:
+```json
+{
+  "rideId": "60f7b3b3b3f3b3b3b3f3b3b3"
+}
+```
+
+#### Responses
+
+**Status Code: 200 OK**
+```json
+{
+  "_id": "ride_id",
+  "user": {...},
+  "captain": {...},
+  "pickup": "Times Square, New York, NY",
+  "destination": "Central Park, New York, NY",
+  "fare": 95.5,
+  "status": "completed",
+  "vehicleType": "car",
+  "__v": 0
+}
+```
+
+#### Implementation Details
+- **Status Update**: Changes ride status to "completed"
+- **Final Notification**: Sends completion update to user
+- **Captain Availability**: Captain becomes available for new rides
+
+---
+
+### Pricing Structure
+
+| Vehicle Type | Base Fare | Per KM | Per Minute | Capacity |
+|-------------|-----------|---------|------------|----------|
+| **Auto** | ₹30 | ₹10 | ₹2 | 1-6 passengers |
+| **Car** | ₹50 | ₹15 | ₹3 | 1-8 passengers | 
+| **Moto** | ₹20 | ₹8 | ₹1.5 | 1-2 passengers |
+
+**Fare Formula**: `Base Fare + (Distance × Per KM) + (Duration × Per Minute)`
+
+---
+
+## 🔄 Real-time Features (Socket.io)
+
+The application uses Socket.io for real-time communication between users, captains, and the server.
+
+### Connection Setup
+```javascript
+// Client connection
+const socket = io('http://localhost:8080');
+```
+
+### Client → Server Events
+
+#### Join Room
+```javascript
+socket.emit('join', {
+  userId: 'user_or_captain_id',
+  userType: 'user' // or 'captain'
+});
+```
+- **Purpose**: Associates socket connection with user/captain
+- **Parameters**: `userId` (MongoDB ObjectId), `userType` ('user' or 'captain')
+- **Effect**: Updates user/captain `socketId` in database
+
+#### Update Captain Location
+```javascript
+socket.emit('update-location-captain', {
+  userId: 'captain_id',
+  location: {
+    ltd: 40.7128,
+    lng: -74.0060
+  }
+});
+```
+- **Purpose**: Updates captain's real-time location
+- **Parameters**: `userId` (captain ID), `location` (latitude/longitude object)
+- **Effect**: Updates captain location in database for ride matching
+
+### Server → Client Events
+
+#### New Ride Request
+**Event**: `new-ride`
+```javascript
+socket.on('new-ride', (rideData) => {
+  // Display ride request to captain
+  console.log('New ride request:', rideData);
+});
+```
+- **Triggered**: When user creates a ride request
+- **Sent to**: Captains within 2km radius of pickup location
+- **Data**: Complete ride object with user details (OTP removed for security)
+
+#### Ride Confirmed
+**Event**: `ride-confirmed`
+```javascript
+socket.on('ride-confirmed', (rideData) => {
+  // Notify user that captain accepted ride
+});
+```
+- **Triggered**: When captain confirms a ride
+- **Sent to**: User who requested the ride
+- **Data**: Updated ride object with captain details
+
+#### Ride Started
+**Event**: `ride-started`
+```javascript
+socket.on('ride-started', (rideData) => {
+  // Notify user that ride has begun
+});
+```
+- **Triggered**: When captain starts ride with valid OTP
+- **Sent to**: User in the ride
+- **Data**: Updated ride object with "ongoing" status
+
+#### Ride Ended
+**Event**: `ride-ended`
+```javascript
+socket.on('ride-ended', (rideData) => {
+  // Notify user that ride is complete
+});
+```
+- **Triggered**: When captain ends the ride
+- **Sent to**: User in the ride  
+- **Data**: Final ride object with "completed" status
+
+#### Error Events
+**Event**: `error`
+```javascript
+socket.on('error', (errorData) => {
+  console.error('Socket error:', errorData.message);
+});
+```
+- **Triggered**: On invalid data or connection errors
+- **Examples**: Invalid location data, malformed requests
+
+### Implementation Details
+
+#### Connection Management
+- **Auto-reconnection**: Client automatically reconnects on disconnect
+- **Room Management**: Users/captains join rooms based on their IDs
+- **Database Sync**: Socket IDs stored in user/captain records
 
 #### Security Considerations
+- **OTP Protection**: OTPs are removed from ride data before broadcasting
+- **User Validation**: Socket events validate user/captain authentication
+- **Location Validation**: Location updates require valid coordinate ranges
 
-- Requires user authentication
-- OTP is marked as `select: false` in database queries for security
-- Validates all input parameters
-- Uses secure random OTP generation
+#### Geographic Features
+- **Radius Matching**: Captains found within 2km of pickup location
+- **Real-time Tracking**: Captain locations updated continuously
+- **Efficient Queries**: MongoDB geospatial queries for nearby captains
 
-## Error Handling
+---
 
 All endpoints follow consistent error response format:
 

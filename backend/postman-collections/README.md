@@ -54,6 +54,9 @@ Each collection includes these variables:
 ### Ride APIs (`/api/rides`)
 - `POST /create` - Create new ride request with fare calculation (requires user auth)
 - `POST /get-fare` - Get fare estimates for all vehicle types (requires user auth)
+- `POST /confirm` - Captain confirms ride acceptance (requires captain auth)
+- `POST /start` - Captain starts ride with OTP verification (requires captain auth)
+- `POST /end` - Captain completes ride (requires captain auth)
 
 ## Usage Guide
 

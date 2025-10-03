@@ -9,8 +9,9 @@ import { useSocket } from "../service/context/SocketClientContext";
 import { useCaptain } from "../service/context/CaptainContext";
 
 const CaptainHome = () => {
-  const [ridePopupPanel, setRidePopupPanel] = useState(true);
+  const [ridePopupPanel, setRidePopupPanel] = useState(false);
   const [confirmRidePopupPanel, setConfirmRidePopupPanel] = useState(false);
+  const [rideData, setRideData] = useState(null);
 
   const ridePopupPanelRef = useRef(null);
   const confirmRidePopupPanelRef = useRef(null);
@@ -20,7 +21,41 @@ const CaptainHome = () => {
 
   useEffect(() => {
     socket.emit("join", { userId: captain.captain._id, userType: "captain" });
+
+    const updateLocation = () => {
+      console.log("updateLocation");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          console.log("position", position);
+          socket.emit("update-location-captain", {
+            userId: captain.captain._id,
+            location: {
+              ltd: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
+          });
+        });
+      }
+    };
+    const locationInterval = setInterval(updateLocation, 10000);
+    updateLocation();
+
+    return () => clearInterval(locationInterval);
   }, [socket, captain]);
+
+  useEffect(() => {
+    const handleNewRide = (data: unknown) => {
+      console.log("New ride received:", data);
+      setRideData(data);
+      setRidePopupPanel(true);
+    };
+
+    socket.on("new-ride", handleNewRide);
+
+    return () => {
+      socket.off("new-ride", handleNewRide);
+    };
+  }, [socket]);
 
   useGSAP(
     function () {
@@ -84,6 +119,8 @@ const CaptainHome = () => {
         <RidePopUp
           setRidePopupPanel={setRidePopupPanel}
           setConfirmRidePopupPanel={setConfirmRidePopupPanel}
+          rideData={rideData}
+          setRideData={setRideData}
         />
       </div>
       <div
@@ -93,6 +130,7 @@ const CaptainHome = () => {
         <ConfirmRidePopUp
           setConfirmRidePopupPanel={setConfirmRidePopupPanel}
           setRidePopupPanel={setRidePopupPanel}
+          rideData={rideData}
         />
       </div>
     </div>
