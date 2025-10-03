@@ -21,6 +21,29 @@ async function createRide(req, res, next) {
     });
     res.status(201).json({ ride, message: "Ride created successfully" });
 
+    // TODO: Send to ALL captains - no radius check for now
+    const captainsModel = require("../models/captainsModel");
+    const allCaptains = await captainsModel.find({ 
+      socketId: { $exists: true, $ne: null } 
+    });
+
+    console.log(`Found ${allCaptains.length} captains with active socket connections`);
+
+    ride.otp = "";
+
+    const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate("user");
+
+    console.log("Broadcasting ride to all captains:", rideWithUser ? "Success" : "Failed to populate user");
+
+    allCaptains.forEach((captain) => {
+      console.log(`Sending to captain ${captain._id} with socketId: ${captain.socketId}`);
+      sendMessageToSocketId(captain.socketId, {
+        event: "new-ride",
+        data: rideWithUser,
+      });
+    });
+
+    /* RADIUS-BASED CODE - DISABLED FOR TESTING
     const pickupCoordinates = await mapsService.getCoordinatesFromAddress(
       pickup
     );
@@ -41,6 +64,7 @@ async function createRide(req, res, next) {
         data: rideWithUser,
       });
     });
+    */
   } catch (error) {
     res.status(400).json({ error: error.message });
     console.error(error);
